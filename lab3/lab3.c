@@ -8,7 +8,11 @@ int main() {
 
     for (int i = 0; i < lvl; i++) {
         int pid = fork();
-        if (pid == 0) {
+        if (pid == -1) {
+            perror("fork failed");
+            return 1;
+        }
+        else if (pid == 0) {
             if (i == lvl - 1) {
                 execlp("ps", "-u root", "-l", "--forest", NULL);
             }
