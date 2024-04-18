@@ -25,11 +25,11 @@ int main()
                         strcpy(new_string_pointer, newClipboardData);
 
                         EmptyClipboard();
-
+                        SetClipboardData(CF_TEXT, hNewData);
                         GlobalUnlock(hNewData);
                         printf("New clipboard data: %s\n", newClipboardData);
                         CloseClipboard();
-                        return 0;
+                        
                     }
                 }
             }
