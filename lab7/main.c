@@ -9,7 +9,7 @@
 #define READ 0
 #define WRITE 1
 #define INPUT_BUFFER_SIZE 128
-#define WORK 1
+#define CONTINUE 1
 #define EXIT 0
 
 void transformation_letters(char* str) {
@@ -30,7 +30,7 @@ void transformation_numbers(char* str) {
     }
 }
 
-void input(int pipe1[2], int pipe2[2], int pid, int* status) {
+void input(int pipe1[2], int pipe2[2], int pid) {
     close(pipe1[READ]);
     close(pipe2[WRITE]);
     int status = CONTINUE;
@@ -50,9 +50,10 @@ void input(int pipe1[2], int pipe2[2], int pid, int* status) {
         exit(0);
     }
     write(pipe1[WRITE], message, sizeof(message));
+    sleep(5);
 }
 
-void transform1(int pipe1[2], int pipe2[2]) {
+void transform1(int pipe1[2], int pipe2[2], int pid) {
 int status;
     read(pipe1[READ], &status, sizeof(status));
     close(pipe1[WRITE]);
@@ -64,13 +65,14 @@ int status;
         waitpid(pid, NULL, 0);
         exit(0);
     }
+    
     char message[INPUT_BUFFER_SIZE];
+    read(pipe1[READ], &message, sizeof(message));
     char old_message[INPUT_BUFFER_SIZE];
     strcpy(old_message, message);
     transformation_letters(message);
-    
-    printf("TRANSFORM: transforms '%s' to '%s'.\n", old_message, message);
 
+    printf("TRANSFORM: transforms '%s' to '%s'.\n", old_message, message);
     write(pipe2[WRITE], &status, sizeof(status));
 
     write(pipe2[WRITE], &message, sizeof(message));
@@ -78,7 +80,7 @@ int status;
 
 void transform2(int pipe1[2], int pipe2[2]) {
     int mypipe;
-    mypipe = open(FIFO, O_WRONLY);
+    mypipe = open("mypipe", O_WRONLY);
     close(pipe1[READ]);
     close(pipe2[WRITE]);
     close(pipe2[WRITE]);
@@ -93,11 +95,11 @@ void transform2(int pipe1[2], int pipe2[2]) {
     }
     char message[INPUT_BUFFER_SIZE];
     char old_message[INPUT_BUFFER_SIZE];
+    read(pipe2[READ], &message, sizeof(message));
     strcpy(old_message, message);
     transformation_numbers(message);
 
-    printf("TRANSFORM: transforms '%s' to '%s'.\n", old_message, message);
-
+    printf("TRANSFORM2: transforms '%s' to '%s'.\n", old_message, message);
     write(mypipe, &status, sizeof(status));
 
     write(mypipe, &message, sizeof(message));
@@ -105,7 +107,6 @@ void transform2(int pipe1[2], int pipe2[2]) {
 
 int main() {
   
-    int status = WORK;
     while (1) {
         int pipe1[2];
         pipe(pipe1);

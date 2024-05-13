@@ -4,7 +4,7 @@
 #include <unistd.h>
 
 
-#define INPUT_BUFFER_SIZE 64
+#define INPUT_BUFFER_SIZE 128
 #define EXIT 0
 #define FIFO "mypipe"
 
